@@ -25,7 +25,7 @@ jobs:
       run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u "${{ github.actor }}" --password-stdin
 
     - name: Tag the latest Docker image
-      run: docker tag mqtt2prometheus:latest docker.pkg.github.com/${GITHUB_REPOSITORY}/${GITHUB_WORKFLOW}:${VERSION}
+      run: docker tag ${GITHUB_WORKFLOW}:${VERSION} docker.pkg.github.com/${GITHUB_REPOSITORY}/${GITHUB_WORKFLOW}:${VERSION}
       if: success()
 
     - name: Push the latest image to GPR
