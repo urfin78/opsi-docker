@@ -1,0 +1,36 @@
+name: opsi
+
+on: 
+  push:
+    branches:
+      - master
+
+jobs:
+  build_latest:
+    name: Build_Image
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2.3.2
+    - name: get_version
+      run: echo "::set-env name=VERSION::$(curl -s  http://download.opensuse.org/repositories/home:/uibmz:/opsi:/4.1:/stable/Debian_10/|grep -o -E 'opsi-server_[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+-[0-9]+'|head -1|awk -F _ '{ print $2 }')"
+    
+    - name: docker_build
+      run: docker build -t ${GITHUB_WORKFLOW}:${VERSION} .
+ 
+    - name: docker_inspect
+      run: docker inspect ${GITHUB_WORKFLOW}:${VERSION}
+
+    - name: Login to GitHub Package Registry
+      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u "${{ github.actor }}" --password-stdin
+
+    - name: Tag the latest Docker image
+      run: docker tag mqtt2prometheus:latest docker.pkg.github.com/${GITHUB_REPOSITORY}/${GITHUB_WORKFLOW}:${VERSION}
+      if: success()
+
+    - name: Push the latest image to GPR
+      run: docker push docker.pkg.github.com/${GITHUB_REPOSITORY}/${GITHUB_WORKFLOW}:${VERSION}
+      if: success()
+
+    - name: Logout from GitHub Registry
+      run: docker logout docker.pkg.github.com
