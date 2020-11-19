@@ -13,7 +13,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2.3.4
     - name: get_version
-      run: echo "::set-env name=VERSION::$(curl -s  http://download.opensuse.org/repositories/home:/uibmz:/opsi:/4.1:/stable/Debian_10/|grep -o -E 'opsi-server_[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+-[0-9]+'|head -1|awk -F _ '{ print $2 }')"
+      run: |
+        export OPSI_VERSION=$(curl -s  http://download.opensuse.org/repositories/home:/uibmz:/opsi:/4.1:/stable/Debian_10/|grep -o -E 'opsi-server_[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+-[0-9]+'|head -1|awk -F _ '{ print $2 }')
+        echo "VERSION=$OPSI_VERSION" >> ${GITHUB_ENV}
     
     - name: docker_build
       run: docker build -t ${GITHUB_WORKFLOW}:${VERSION} .
